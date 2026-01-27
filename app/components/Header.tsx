@@ -1,23 +1,17 @@
 
 import { MaterialIcons } from '@expo/vector-icons';
 import React from 'react';
-import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-const Header: React.FC = () => {
+const Header: React.FC<{ onMenuPress?: () => void }> = ({ onMenuPress }) => {
   return (
     <View style={styles.header}>
       <View style={styles.userInfo}>
-        <View>
-          <Image 
-            source={{ uri: "https://picsum.photos/seed/alex/48/48" }}
-            style={styles.avatar}
-          />
-          <View style={styles.onlineIndicator} />
-        </View>
-        <View>
-          <Text style={styles.greeting}>Good Morning,</Text>
-          <Text style={styles.name}>Alex</Text>
-        </View>
+        <TouchableOpacity onPress={onMenuPress} style={styles.menuButton}>
+          <MaterialIcons name="menu" size={24} color="#FFFFFF" />
+        </TouchableOpacity>
+        
+        
       </View>
       <View style={styles.headerActions}>
         <View style={styles.dateBadge}>
@@ -41,6 +35,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
+  },
+  menuButton: {
+    width: 40,
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#1b2e21',
+    borderRadius: 20,
   },
   avatar: {
     width: 48,
@@ -75,8 +77,11 @@ const styles = StyleSheet.create({
   dateBadge: {
     backgroundColor: '#1b2e21',
     paddingHorizontal: 12,
-    paddingVertical: 6,
+    paddingVertical: 8,
     borderRadius: 999,
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   dateText: {
     color: '#FFFFFF',

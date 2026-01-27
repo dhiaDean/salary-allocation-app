@@ -1,23 +1,27 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { ScrollView, StyleSheet } from 'react-native';
 
 // Custom Components
 import BudgetUsage from '../components/BudgetUsage';
+import Drawer from '../components/Drawer';
 import Header from '../components/Header';
 import MetricCards from '../components/MetricCards';
 import QuickActions from '../components/QuickActions';
 
 const Dashboard = () => {
-  return (
-    <ScrollView contentContainerStyle={styles.container}>
-      
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
-      {/* Dashboard Content */}
-      <Header/>
-      <MetricCards />
-      <BudgetUsage />
-      <QuickActions />
-    </ScrollView>
+  return (
+    <>
+      <ScrollView contentContainerStyle={styles.container}>
+        {/* Dashboard Content */}
+        <Header onMenuPress={() => setIsDrawerOpen(true)} />
+        <MetricCards />
+        <BudgetUsage />
+        <QuickActions />
+      </ScrollView>
+      <Drawer isOpen={isDrawerOpen} onClose={() => setIsDrawerOpen(false)} />
+    </>
   );
 };
 
