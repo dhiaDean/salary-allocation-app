@@ -1,10 +1,15 @@
 
+import { router } from 'expo-router';
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 const BudgetUsage: React.FC = () => {
   return (
-    <View style={styles.container}>
+    <TouchableOpacity 
+      style={styles.container}
+      onPress={() => router.push('/salary-expenses')}
+      activeOpacity={0.8}
+    >
       <View style={styles.header}>
         <View>
           <Text style={styles.title}>Budget Usage</Text>
@@ -24,7 +29,7 @@ const BudgetUsage: React.FC = () => {
         <Text style={styles.footerText}>$2,350 Spent</Text>
         <Text style={[styles.footerText, { color: '#9ca3af' }]}>$1,850 Remaining</Text>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 };
 
