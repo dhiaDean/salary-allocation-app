@@ -1,32 +1,47 @@
 import { MaterialIcons } from '@expo/vector-icons';
+import { router } from 'expo-router';
 import React from 'react';
-import { SafeAreaView, ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import {
+  ActivityIndicator,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useDatabase } from '../../db/DatabaseContext';
 
-const incomeSources = [
-  { label: 'Main Job', sublabel: 'Salary', amount: '$4,500.00', icon: 'work' },
-  { label: 'Freelance', sublabel: 'Project Based', amount: '$700.00', icon: 'laptop-mac' },
-];
-
-const expenses = [
-  { label: 'Rent', sublabel: 'Housing', amount: '$1,500.00', icon: 'home' },
-  { label: 'Groceries', sublabel: 'Food & Dining', amount: '$450.00', icon: 'shopping-cart' },
-  { label: 'Utilities', sublabel: 'Bills', amount: '$200.00', icon: 'water-drop' },
+const MONTH_NAMES = [
+  '', 'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December',
 ];
 
 const SalaryExpensesClosedScreen: React.FC = () => {
+  const { isReady, currentMonth, summary, expenses } = useDatabase();
+
+  if (!isReady || !currentMonth || !summary) {
+    return (
+      <SafeAreaView style={styles.safeArea}>
+        <ActivityIndicator size="large" color="#19e65e" style={{ flex: 1 }} />
+      </SafeAreaView>
+    );
+  }
+
+  const monthLabel = `${MONTH_NAMES[currentMonth.month]} ${currentMonth.year}`;
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="light-content" backgroundColor="#112116" />
 
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity style={styles.iconBtn}>
+        <TouchableOpacity style={styles.iconBtn} onPress={() => router.back()}>
           <MaterialIcons name="arrow-back" size={24} color="#FFFFFF" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>December 2025</Text>
-        <TouchableOpacity style={styles.iconBtn}>
-          <MaterialIcons name="archive" size={24} color="#9ca3af" />
-        </TouchableOpacity>
+        <Text style={styles.headerTitle}>{monthLabel}</Text>
+        <View style={{ width: 40 }} />
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
@@ -44,58 +59,64 @@ const SalaryExpensesClosedScreen: React.FC = () => {
           <View style={styles.summaryGrid}>
             <View style={styles.summaryCell}>
               <Text style={styles.summaryCellLabel}>Total Income</Text>
-              <Text style={styles.summaryCellAmount}>$5,200.00</Text>
+              <Text style={styles.summaryCellAmount}>
+                ${summary.salary.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+              </Text>
             </View>
             <View style={[styles.summaryCell, { alignItems: 'flex-end' }]}>
               <Text style={styles.summaryCellLabel}>Total Expenses</Text>
-              <Text style={styles.summaryCellAmount}>$3,150.00</Text>
+              <Text style={styles.summaryCellAmount}>
+                ${summary.totalSpent.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+              </Text>
             </View>
           </View>
           <View style={styles.divider} />
           <View style={styles.netResultRow}>
             <Text style={styles.netLabel}>Net Result</Text>
-            <Text style={styles.netAmount}>+$2,050.00</Text>
+            <Text style={styles.netAmount}>
+              +${summary.projectedSavings.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+            </Text>
           </View>
         </View>
 
-        {/* Income Sources */}
+        {/* Expense Breakdown */}
         <View style={styles.sectionBlock}>
-          <Text style={styles.sectionLabel}>Income Sources</Text>
-          {incomeSources.map((item, i) => (
-            <View key={i} style={[styles.listItem, i < incomeSources.length - 1 && styles.listItemBorder]}>
-              <View style={styles.listIconWrapper}>
-                <MaterialIcons name={item.icon as any} size={22} color="rgba(25,230,94,0.8)" />
+          <Text style={styles.sectionLabel}>Expenses Breakdown</Text>
+          {expenses.map((item, i) => {
+            const color = JSON.parse(item.color);
+            return (
+              <View
+                key={item.id}
+                style={[styles.listItem, i < expenses.length - 1 && styles.listItemBorder]}
+              >
+                <View style={[styles.listIconWrapper, { backgroundColor: color.bg }]}>
+                  <MaterialIcons name={item.icon as any} size={22} color={color.dark} />
+                </View>
+                <View style={styles.listItemInfo}>
+                  <Text style={styles.listItemLabel}>{item.name}</Text>
+                  <Text style={styles.listItemSub}>
+                    Planned: ${item.planned_amount}
+                  </Text>
+                </View>
+                <Text style={[
+                  styles.listItemAmount,
+                  item.spent_amount > item.planned_amount && { color: '#f87171' }
+                ]}>
+                  ${item.spent_amount.toFixed(2)}
+                </Text>
               </View>
-              <View style={styles.listItemInfo}>
-                <Text style={styles.listItemLabel}>{item.label}</Text>
-                <Text style={styles.listItemSub}>{item.sublabel}</Text>
-              </View>
-              <Text style={styles.listItemAmount}>{item.amount}</Text>
-            </View>
-          ))}
-        </View>
-
-        {/* Expenses */}
-        <View style={styles.sectionBlock}>
-          <Text style={styles.sectionLabel}>Expenses</Text>
-          {expenses.map((item, i) => (
-            <View key={i} style={[styles.listItem, i < expenses.length - 1 && styles.listItemBorder]}>
-              <View style={[styles.listIconWrapper, { backgroundColor: '#1a2c20' }]}>
-                <MaterialIcons name={item.icon as any} size={22} color="#6b7280" />
-              </View>
-              <View style={styles.listItemInfo}>
-                <Text style={styles.listItemLabel}>{item.label}</Text>
-                <Text style={styles.listItemSub}>{item.sublabel}</Text>
-              </View>
-              <Text style={styles.listItemAmount}>{item.amount}</Text>
-            </View>
-          ))}
+            );
+          })}
         </View>
 
         {/* Vault Contribution */}
         <View style={styles.vaultSection}>
           <Text style={styles.sectionLabel}>Vault Contribution</Text>
-          <View style={styles.vaultCard}>
+          <TouchableOpacity
+            style={styles.vaultCard}
+            onPress={() => router.push('/vault-history')}
+            activeOpacity={0.8}
+          >
             <View style={styles.vaultIconWrapper}>
               <MaterialIcons name="savings" size={24} color="#19e65e" />
             </View>
@@ -108,9 +129,11 @@ const SalaryExpensesClosedScreen: React.FC = () => {
             </View>
             <View style={styles.vaultAmountRow}>
               <MaterialIcons name="lock" size={16} color="#4b5563" />
-              <Text style={styles.vaultAmount}>$1,000.00</Text>
+              <Text style={styles.vaultAmount}>
+                ${summary.projectedSavings.toFixed(2)}
+              </Text>
             </View>
-          </View>
+          </TouchableOpacity>
         </View>
 
         {/* Read-only footer */}
@@ -140,11 +163,11 @@ const styles = StyleSheet.create({
   netResultRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   netLabel: { color: '#d1d5db', fontSize: 16, fontWeight: '500' },
   netAmount: { color: '#19e65e', fontSize: 24, fontWeight: 'bold' },
-  sectionBlock: { opacity: 0.85, marginBottom: 8 },
+  sectionBlock: { marginBottom: 8 },
   sectionLabel: { color: '#6b7280', fontSize: 12, fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: 1, paddingHorizontal: 16, marginBottom: 4, paddingTop: 8 },
   listItem: { flexDirection: 'row', alignItems: 'center', gap: 16, paddingHorizontal: 16, paddingVertical: 16 },
   listItemBorder: { borderBottomWidth: 1, borderColor: 'rgba(255,255,255,0.05)' },
-  listIconWrapper: { width: 40, height: 40, borderRadius: 12, backgroundColor: 'rgba(25,230,94,0.1)', alignItems: 'center', justifyContent: 'center' },
+  listIconWrapper: { width: 40, height: 40, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
   listItemInfo: { flex: 1 },
   listItemLabel: { color: '#FFFFFF', fontSize: 16, fontWeight: '500' },
   listItemSub: { color: '#6b7280', fontSize: 12 },

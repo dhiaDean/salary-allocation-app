@@ -1,17 +1,19 @@
 import { Stack } from 'expo-router';
-import { StyleSheet } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { StyleSheet, View } from 'react-native';
+import { DatabaseProvider } from '../db/DatabaseContext';
 
 export default function RootLayout() {
   return (
-    <SafeAreaView style={styles.container}>
-      <Stack
-        screenOptions={{
-          headerShown: false,
-          contentStyle: { backgroundColor: '#112116' },
-        }}
-      />
-    </SafeAreaView>
+    <DatabaseProvider>
+      <View style={styles.container}>
+        <Stack
+          screenOptions={{
+            headerShown: false,
+            contentStyle: { backgroundColor: '#112116' },
+          }}
+        />
+      </View>
+    </DatabaseProvider>
   );
 }
 

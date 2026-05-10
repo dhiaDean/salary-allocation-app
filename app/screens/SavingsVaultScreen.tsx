@@ -1,6 +1,7 @@
 
 import React from 'react';
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet, SafeAreaView, StatusBar } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet, StatusBar } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const historyData = [
     { month: 'January 2026', type: 'Monthly Contribution', amount: 1320, hasNote: true, icon: 'savings', iconBg: 'rgba(25, 230, 94, 0.1)', iconColor: '#19e65e' },
