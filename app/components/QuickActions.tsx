@@ -1,25 +1,43 @@
 
-import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
+import { router } from 'expo-router';
+import React from 'react';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 const QuickActions: React.FC = () => {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Quick Actions</Text>
       <View style={styles.actionsContainer}>
-        <TouchableOpacity style={styles.primaryButton}>
+        {/* Update Spent Amount → links to Salary & Expenses (same as Budget Usage widget) */}
+        <TouchableOpacity
+          style={styles.primaryButton}
+          onPress={() => router.push('/salary-expenses')}
+          activeOpacity={0.85}
+        >
           <MaterialIcons name="add-circle" size={24} color="#112116" />
           <Text style={styles.primaryButtonText}>Update Spent Amount</Text>
         </TouchableOpacity>
+
         <View style={styles.secondaryActions}>
-          <TouchableOpacity style={styles.secondaryButton}>
+          {/* View Vault → Savings Vault History */}
+          <TouchableOpacity
+            style={styles.secondaryButton}
+            onPress={() => router.push('/vault-history')}
+            activeOpacity={0.75}
+          >
             <View style={styles.secondaryButtonIconWrapper}>
               <MaterialIcons name="lock" size={24} color="#FFFFFF" />
             </View>
             <Text style={styles.secondaryButtonText}>View Vault</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.secondaryButton}>
+
+          {/* Analyze Trends → Charts & Insights */}
+          <TouchableOpacity
+            style={styles.secondaryButton}
+            onPress={() => router.push('/charts-insights')}
+            activeOpacity={0.75}
+          >
             <View style={styles.secondaryButtonIconWrapper}>
               <MaterialIcons name="insights" size={24} color="#FFFFFF" />
             </View>

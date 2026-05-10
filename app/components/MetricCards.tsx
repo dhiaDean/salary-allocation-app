@@ -5,15 +5,15 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
 const MetricCards: React.FC = () => {
   return (
-    <ScrollView 
+    <ScrollView
       horizontal
       showsHorizontalScrollIndicator={false}
       contentContainerStyle={styles.scrollViewContainer}
     >
       {/* Vault Balance Card */}
-      <View style={[styles.card, {width: 256}]}>
+      <View style={[styles.card, { width: 256 }]}>
         <View style={styles.cardHeader}>
-          <View style={[styles.iconWrapper, { backgroundColor: 'rgba(255, 255, 255, 0.1)'}]}>
+          <View style={[styles.iconWrapper, { backgroundColor: 'rgba(255, 255, 255, 0.1)' }]}>
             <MaterialIcons name="lock" size={24} color="#19e65e" />
           </View>
           <Text style={styles.cardTitle}>Vault Balance</Text>
@@ -30,19 +30,33 @@ const MetricCards: React.FC = () => {
       {/* Left to Spend Card */}
       <View style={[styles.card, { width: 224 }]}>
         <View style={styles.cardHeader}>
-          <View style={[styles.iconWrapper, { backgroundColor: 'rgba(255, 255, 255, 0.1)'}]}>
+          <View style={[styles.iconWrapper, { backgroundColor: 'rgba(255, 255, 255, 0.1)' }]}>
             <MaterialIcons name="account-balance-wallet" size={24} color="#93c8a5" />
           </View>
-          <Text style={styles.cardTitle}>Left</Text>
+          <Text style={styles.cardTitle}>Left to Spend</Text>
         </View>
         <View style={styles.leftContent}>
-           <View>
-              <Text style={styles.leftAmount}>$1,850.00</Text>
-              <Text style={styles.salaryText}>of $4,200 Salary</Text>
-           </View>
-           <View style={styles.progressBarBackground}>
-              <View style={[styles.progressBarFill, { width: '44%' }]}></View>
-           </View>
+          <View>
+            <Text style={styles.leftAmount}>$1,850.00</Text>
+            <Text style={styles.salaryText}>of $4,200 Salary</Text>
+          </View>
+          <View style={styles.progressBarBackground}>
+            <View style={[styles.progressBarFill, { width: '44%' }]} />
+          </View>
+        </View>
+      </View>
+
+      {/* Monthly Salary Card */}
+      <View style={[styles.card, { width: 200 }]}>
+        <View style={styles.cardHeader}>
+          <View style={[styles.iconWrapper, { backgroundColor: 'rgba(255, 255, 255, 0.1)' }]}>
+            <MaterialIcons name="payments" size={24} color="#93c8a5" />
+          </View>
+          <Text style={styles.cardTitle}>Monthly Salary</Text>
+        </View>
+        <View>
+          <Text style={styles.balanceText}>$4,200.00</Text>
+          <Text style={styles.salaryText}>Fixed Income</Text>
         </View>
       </View>
     </ScrollView>
