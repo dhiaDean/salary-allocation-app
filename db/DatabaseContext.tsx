@@ -171,7 +171,13 @@ export const DatabaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const refreshCategories = useCallback(async () => {
     const cats = await getActiveCategories();
     setCategories(cats);
-  }, []);
+    if (currentMonth) {
+      const entries = await getExpenseEntries(currentMonth.id);
+      setExpenses(entries);
+      const s = await getMonthSummary(currentMonth.id);
+      setSummary(s);
+    }
+  }, [currentMonth]);
 
   const removeCategory = useCallback(async (id: number) => {
     await deleteCategory(id);

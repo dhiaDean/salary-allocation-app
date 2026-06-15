@@ -15,12 +15,26 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDatabase } from '../../db/DatabaseContext';
 import { addCategory } from '../../db/queries';
+import AddCategoryModal from '../components/AddCategoryModal';
+import TransactionManagerModal from '../components/TransactionManagerModal';
+import type { ExpenseEntryWithCategory } from '../../db/types';
 
 const ManagePlannedExpensesScreen: React.FC = () => {
-  const { isReady, categories, removeCategory, editCategory, refreshCategories } = useDatabase();
+  const {
+    isReady,
+    categories,
+    removeCategory,
+    editCategory,
+    refreshCategories,
+    currentMonth,
+    expenses,
+  } = useDatabase();
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editValue, setEditValue] = useState('');
   const [editName, setEditName] = useState('');
+  const [addModalVisible, setAddModalVisible] = useState(false);
+  const [txModalVisible, setTxModalVisible] = useState(false);
+  const [selectedExpense, setSelectedExpense] = useState<ExpenseEntryWithCategory | null>(null);
 
   if (!isReady) {
     return (
@@ -64,22 +78,18 @@ const ManagePlannedExpensesScreen: React.FC = () => {
   };
 
   const handleAdd = () => {
-    Alert.prompt(
-      'New Category',
-      'Enter category name:',
-      async (name) => {
-        if (!name?.trim()) return;
-        await addCategory(
-          name.trim(),
-          '',
-          'category',
-          { light: '#19e65e', dark: '#19e65e', bg: 'rgba(25,230,94,0.2)' },
-          0
-        );
-        await refreshCategories();
-      },
-      'plain-text'
-    );
+    setAddModalVisible(true);
+  };
+
+  const handleSaveCategory = async (
+    name: string,
+    description: string,
+    icon: string,
+    color: { light: string; dark: string; bg: string },
+    plannedAmount: number
+  ) => {
+    await addCategory(name, description, icon, color, plannedAmount);
+    await refreshCategories();
   };
 
   return (
@@ -116,12 +126,24 @@ const ManagePlannedExpensesScreen: React.FC = () => {
             categories.map((item, index) => {
               const color = JSON.parse(item.color);
               const isEditing = editingId === item.id;
+              const monthlyBudget = expenses.find((e) => e.category_id === item.id);
+
               return (
                 <View
                   key={item.id}
                   style={[styles.listItem, index < categories.length - 1 && styles.listItemBorder]}
                 >
-                  <View style={styles.listItemLeft}>
+                  <TouchableOpacity
+                    style={styles.listItemLeft}
+                    activeOpacity={isEditing ? 1 : 0.7}
+                    disabled={isEditing}
+                    onPress={() => {
+                      if (monthlyBudget) {
+                        setSelectedExpense(monthlyBudget);
+                        setTxModalVisible(true);
+                      }
+                    }}
+                  >
                     <View style={[styles.categoryIcon, { backgroundColor: color.bg }]}>
                       <MaterialIcons name={item.icon as any} size={24} color={color.dark} />
                     </View>
@@ -150,13 +172,30 @@ const ManagePlannedExpensesScreen: React.FC = () => {
                       ) : (
                         <>
                           <Text style={styles.categoryName}>{item.name}</Text>
-                          <Text style={styles.categoryAmount}>
-                            ${item.planned_amount.toFixed(2)}
-                          </Text>
+                          <View style={styles.amountRow}>
+                            <Text style={styles.categoryAmount}>
+                              Planned: ${item.planned_amount.toFixed(2)}
+                            </Text>
+                            {monthlyBudget && (
+                              <Text
+                                style={[
+                                  styles.spentText,
+                                  {
+                                    color:
+                                      monthlyBudget.spent_amount > monthlyBudget.planned_amount
+                                        ? '#f87171'
+                                        : '#9ca3af',
+                                  },
+                                ]}
+                              >
+                                {" • "}Spent: ${monthlyBudget.spent_amount.toFixed(2)}
+                              </Text>
+                            )}
+                          </View>
                         </>
                       )}
                     </View>
-                  </View>
+                  </TouchableOpacity>
                   <View style={styles.listItemActions}>
                     <TouchableOpacity
                       style={styles.actionBtn}
@@ -185,6 +224,21 @@ const ManagePlannedExpensesScreen: React.FC = () => {
           </Text>
         </View>
       </ScrollView>
+
+      <AddCategoryModal
+        visible={addModalVisible}
+        onClose={() => setAddModalVisible(false)}
+        onSave={handleSaveCategory}
+      />
+
+      <TransactionManagerModal
+        visible={txModalVisible}
+        expense={selectedExpense}
+        onClose={() => {
+          setTxModalVisible(false);
+          setSelectedExpense(null);
+        }}
+      />
     </SafeAreaView>
   );
 };
@@ -204,7 +258,9 @@ const styles = StyleSheet.create({
   listItemLeft: { flexDirection: 'row', alignItems: 'center', gap: 16, flex: 1 },
   categoryIcon: { width: 48, height: 48, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
   categoryName: { color: '#FFFFFF', fontSize: 16, fontWeight: 'bold' },
-  categoryAmount: { color: 'rgba(25,230,94,0.8)', fontSize: 14, fontWeight: '500', marginTop: 2 },
+  categoryAmount: { color: 'rgba(25,230,94,0.8)', fontSize: 14, fontWeight: '500' },
+  amountRow: { flexDirection: 'row', alignItems: 'center', marginTop: 2 },
+  spentText: { fontSize: 14, fontWeight: '500' },
   editNameInput: { color: '#FFFFFF', fontSize: 15, fontWeight: 'bold', borderBottomWidth: 1, borderColor: '#19e65e', paddingVertical: 2, marginBottom: 4 },
   editAmountInput: { color: '#19e65e', fontSize: 14, fontWeight: '500', borderBottomWidth: 1, borderColor: '#19e65e', paddingVertical: 2 },
   listItemActions: { flexDirection: 'row', alignItems: 'center', gap: 4 },

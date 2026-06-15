@@ -12,6 +12,20 @@ import type {
 //  MONTHS
 // ─────────────────────────────────────────────
 
+/** Helper to ensure all active template categories have budget snapshots for a given month */
+async function ensureAllActiveCategoriesHaveBudgets(db: any, monthId: number): Promise<void> {
+  const categories = await db.getAllAsync(
+    'SELECT * FROM expense_categories WHERE is_active = 1'
+  );
+  for (const cat of categories) {
+    await db.runAsync(
+      `INSERT OR IGNORE INTO monthly_budgets (month_id, category_id, planned_amount)
+       VALUES (?, ?, ?)`,
+      [monthId, cat.id, cat.planned_amount]
+    );
+  }
+}
+
 /** Get or create a month record for the given year/month */
 export async function getOrCreateMonth(year: number, month: number): Promise<Month> {
   const db = await getDb();
@@ -26,16 +40,9 @@ export async function getOrCreateMonth(year: number, month: number): Promise<Mon
     );
     const monthId = result.lastInsertRowId;
     row = await db.getFirstAsync<Month>('SELECT * FROM months WHERE id = ?', [monthId]);
-
-    // Create monthly budget snapshots from current active categories
-    const categories = await getActiveCategories();
-    for (const cat of categories) {
-      await db.runAsync(
-        `INSERT OR IGNORE INTO monthly_budgets (month_id, category_id, planned_amount)
-         VALUES (?, ?, ?)`,
-        [monthId, cat.id, cat.planned_amount]
-      );
-    }
+  }
+  if (row && row.status === 'open') {
+    await ensureAllActiveCategoriesHaveBudgets(db, row.id);
   }
   return row!;
 }
@@ -134,12 +141,39 @@ export async function updateCategory(
     'UPDATE expense_categories SET name = ?, description = ?, planned_amount = ? WHERE id = ?',
     [name, description, plannedAmount, id]
   );
+  // Also update open monthly budgets
+  await db.runAsync(
+    `UPDATE monthly_budgets 
+     SET planned_amount = ? 
+     WHERE category_id = ? 
+       AND month_id IN (SELECT id FROM months WHERE status = 'open')`,
+    [plannedAmount, id]
+  );
 }
 
 export async function deleteCategory(id: number): Promise<void> {
   const db = await getDb();
   // Soft delete — keeps historical data intact
   await db.runAsync('UPDATE expense_categories SET is_active = 0 WHERE id = ?', [id]);
+  
+  // For open months, delete monthly_budgets entry if it has no transactions
+  const openBudgets = await db.getAllAsync<{ id: number }>(
+    `SELECT mb.id 
+     FROM monthly_budgets mb
+     JOIN months m ON m.id = mb.month_id
+     WHERE mb.category_id = ? AND m.status = 'open'`,
+    [id]
+  );
+  
+  for (const b of openBudgets) {
+    const txCount = await db.getFirstAsync<{ count: number }>(
+      'SELECT COUNT(*) as count FROM transactions WHERE budget_id = ?',
+      [b.id]
+    );
+    if (txCount && txCount.count === 0) {
+      await db.runAsync('DELETE FROM monthly_budgets WHERE id = ?', [b.id]);
+    }
+  }
 }
 
 // ─────────────────────────────────────────────
@@ -149,6 +183,10 @@ export async function deleteCategory(id: number): Promise<void> {
 /** Get all monthly budgets with category info and computed spent amount */
 export async function getExpenseEntries(monthId: number): Promise<ExpenseEntryWithCategory[]> {
   const db = await getDb();
+  const month = await db.getFirstAsync<Month>('SELECT status FROM months WHERE id = ?', [monthId]);
+  if (month && month.status === 'open') {
+    await ensureAllActiveCategoriesHaveBudgets(db, monthId);
+  }
   return db.getAllAsync<ExpenseEntryWithCategory>(
     `SELECT 
        mb.id,
@@ -243,6 +281,9 @@ export async function getTotalVaultBalance(): Promise<number> {
 export async function getMonthSummary(monthId: number): Promise<MonthSummary> {
   const db = await getDb();
   const month = await db.getFirstAsync<Month>('SELECT * FROM months WHERE id = ?', [monthId]);
+  if (month && month.status === 'open') {
+    await ensureAllActiveCategoriesHaveBudgets(db, monthId);
+  }
   const salary = await getSalary(monthId);
 
   // Sum planned amount from monthly_budgets
