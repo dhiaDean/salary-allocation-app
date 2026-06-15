@@ -12,11 +12,12 @@ export interface Month {
   closed_at: string | null;
 }
 
-export interface Salary {
+export interface IncomeEntry {
   id: number;
   month_id: number;
+  source_name: string;
   amount: number;
-  entered_at: string;
+  received_at: string;
 }
 
 export interface ExpenseCategory {
@@ -29,25 +30,38 @@ export interface ExpenseCategory {
   is_active: number;   // 1 = true, 0 = false (SQLite has no boolean)
 }
 
-export interface ExpenseEntry {
+export interface MonthlyBudget {
   id: number;
   month_id: number;
   category_id: number;
-  planned_amount: number; // snapshot at month creation
-  spent_amount: number;
+  planned_amount: number;
 }
 
-export interface VaultEntry {
+export interface Transaction {
   id: number;
-  month_id: number;
+  budget_id: number;
   amount: number;
+  description: string;
+  spent_at: string;
+}
+
+export interface VaultTransaction {
+  id: number;
+  month_id: number | null;
+  amount: number;
+  transaction_type: 'deposit' | 'withdrawal';
   note: string | null;
   created_at: string;
 }
 
 // ── Joined / View types used by screens ──────
 
-export interface ExpenseEntryWithCategory extends ExpenseEntry {
+export interface ExpenseEntryWithCategory {
+  id: number;              // maps to monthly_budgets.id
+  month_id: number;
+  category_id: number;
+  planned_amount: number;  // snapshots monthly_budgets.planned_amount
+  spent_amount: number;    // computed sum of transactions for this budget_id
   name: string;
   description: string;
   icon: string;
@@ -56,8 +70,8 @@ export interface ExpenseEntryWithCategory extends ExpenseEntry {
 
 export interface MonthSummary {
   month: Month;
-  salary: number;
-  totalSpent: number;
-  totalPlanned: number;
-  projectedSavings: number;
+  salary: number;          // computed sum of all income_entries
+  totalSpent: number;      // computed sum of all transactions for this month
+  totalPlanned: number;    // sum of all monthly_budgets.planned_amount
+  projectedSavings: number; // salary - totalSpent
 }

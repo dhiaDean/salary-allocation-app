@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Manage Planned Expenses</title>
+<!-- Google Fonts: Manrope -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Configuration -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#19e65e",
+                        "background-light": "#f6f8f6",
+                        "background-dark": "#112116",
+                        "surface-dark": "#1a3324", // Slightly lighter dark for cards/list items
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom scrollbar for better aesthetics */
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #2d4f3b;
+            border-radius: 4px;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-white antialiased min-h-screen flex flex-col">
+<!-- Top Navigation Bar -->
+<div class="sticky top-0 z-50 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-md border-b border-slate-200 dark:border-white/10 px-4 py-3 flex items-center justify-between transition-colors">
+<button class="p-2 -ml-2 rounded-full hover:bg-slate-200 dark:hover:bg-white/10 transition-colors group">
+<span class="material-symbols-outlined text-slate-700 dark:text-white group-hover:scale-105 transition-transform">arrow_back_ios_new</span>
+</button>
+<h1 class="text-lg font-bold text-center flex-1 pr-8 text-slate-900 dark:text-white">Planned Expenses</h1>
+</div>
+<!-- Main Content -->
+<main class="flex-1 w-full max-w-md mx-auto px-4 pt-6 pb-24">
+<!-- Add New Category Button -->
+<div class="mb-8">
+<button class="w-full flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 active:scale-[0.98] transition-all rounded-xl h-14 shadow-lg shadow-primary/20 group">
+<span class="material-symbols-outlined text-background-dark font-bold">add</span>
+<span class="text-background-dark text-base font-bold tracking-wide">Add New Category</span>
+</button>
+</div>
+<!-- Categories List -->
+<div class="space-y-4">
+<h2 class="text-sm font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider px-2">Current Budget</h2>
+<!-- List Container -->
+<div class="bg-white dark:bg-surface-dark rounded-2xl overflow-hidden shadow-sm dark:shadow-none border border-slate-200 dark:border-white/5 divide-y divide-slate-100 dark:divide-white/5">
+<!-- Item 1: Rent -->
+<div class="group flex items-center justify-between p-4 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors cursor-pointer">
+<div class="flex items-center gap-4">
+<div class="size-12 rounded-xl bg-blue-100 dark:bg-[#244730] flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-blue-600 dark:text-primary text-[24px]">house</span>
+</div>
+<div class="flex flex-col">
+<span class="text-base font-bold text-slate-900 dark:text-white leading-tight">Rent</span>
+<span class="text-sm font-medium text-slate-500 dark:text-primary/80 mt-0.5">$1,200.00</span>
+</div>
+</div>
+<div class="flex items-center gap-1 opacity-60 group-hover:opacity-100 transition-opacity">
+<button aria-label="Edit Rent" class="p-2 rounded-full hover:bg-slate-200 dark:hover:bg-white/10 text-slate-400 dark:text-slate-400 dark:hover:text-white transition-colors">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+<button aria-label="Delete Rent" class="p-2 rounded-full hover:bg-red-100 dark:hover:bg-red-500/20 text-slate-400 dark:text-slate-400 hover:text-red-500 dark:hover:text-red-400 transition-colors">
+<span class="material-symbols-outlined text-[20px]">delete</span>
+</button>
+</div>
+</div>
+<!-- Item 2: Food & Dining -->
+<div class="group flex items-center justify-between p-4 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors cursor-pointer">
+<div class="flex items-center gap-4">
+<div class="size-12 rounded-xl bg-orange-100 dark:bg-[#3d291e] flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-orange-600 dark:text-[#ff8a3d] text-[24px]">restaurant</span>
+</div>
+<div class="flex flex-col">
+<span class="text-base font-bold text-slate-900 dark:text-white leading-tight">Food &amp; Dining</span>
+<span class="text-sm font-medium text-slate-500 dark:text-primary/80 mt-0.5">$400.00</span>
+</div>
+</div>
+<div class="flex items-center gap-1 opacity-60 group-hover:opacity-100 transition-opacity">
+<button aria-label="Edit Food" class="p-2 rounded-full hover:bg-slate-200 dark:hover:bg-white/10 text-slate-400 dark:text-slate-400 dark:hover:text-white transition-colors">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+<button aria-label="Delete Food" class="p-2 rounded-full hover:bg-red-100 dark:hover:bg-red-500/20 text-slate-400 dark:text-slate-400 hover:text-red-500 dark:hover:text-red-400 transition-colors">
+<span class="material-symbols-outlined text-[20px]">delete</span>
+</button>
+</div>
+</div>
+<!-- Item 3: Transport -->
+<div class="group flex items-center justify-between p-4 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors cursor-pointer">
+<div class="flex items-center gap-4">
+<div class="size-12 rounded-xl bg-purple-100 dark:bg-[#2a2438] flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-purple-600 dark:text-[#a78bfa] text-[24px]">directions_bus</span>
+</div>
+<div class="flex flex-col">
+<span class="text-base font-bold text-slate-900 dark:text-white leading-tight">Transport</span>
+<span class="text-sm font-medium text-slate-500 dark:text-primary/80 mt-0.5">$150.00</span>
+</div>
+</div>
+<div class="flex items-center gap-1 opacity-60 group-hover:opacity-100 transition-opacity">
+<button aria-label="Edit Transport" class="p-2 rounded-full hover:bg-slate-200 dark:hover:bg-white/10 text-slate-400 dark:text-slate-400 dark:hover:text-white transition-colors">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+<button aria-label="Delete Transport" class="p-2 rounded-full hover:bg-red-100 dark:hover:bg-red-500/20 text-slate-400 dark:text-slate-400 hover:text-red-500 dark:hover:text-red-400 transition-colors">
+<span class="material-symbols-outlined text-[20px]">delete</span>
+</button>
+</div>
+</div>
+<!-- Item 4: Utilities -->
+<div class="group flex items-center justify-between p-4 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors cursor-pointer">
+<div class="flex items-center gap-4">
+<div class="size-12 rounded-xl bg-cyan-100 dark:bg-[#1e3a3d] flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-cyan-600 dark:text-[#2dd4bf] text-[24px]">wifi</span>
+</div>
+<div class="flex flex-col">
+<span class="text-base font-bold text-slate-900 dark:text-white leading-tight">Utilities</span>
+<span class="text-sm font-medium text-slate-500 dark:text-primary/80 mt-0.5">$120.00</span>
+</div>
+</div>
+<div class="flex items-center gap-1 opacity-60 group-hover:opacity-100 transition-opacity">
+<button aria-label="Edit Utilities" class="p-2 rounded-full hover:bg-slate-200 dark:hover:bg-white/10 text-slate-400 dark:text-slate-400 dark:hover:text-white transition-colors">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+<button aria-label="Delete Utilities" class="p-2 rounded-full hover:bg-red-100 dark:hover:bg-red-500/20 text-slate-400 dark:text-slate-400 hover:text-red-500 dark:hover:text-red-400 transition-colors">
+<span class="material-symbols-outlined text-[20px]">delete</span>
+</button>
+</div>
+</div>
+<!-- Item 5: Entertainment -->
+<div class="group flex items-center justify-between p-4 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors cursor-pointer">
+<div class="flex items-center gap-4">
+<div class="size-12 rounded-xl bg-pink-100 dark:bg-[#3d1e2e] flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-pink-600 dark:text-[#f472b6] text-[24px]">movie</span>
+</div>
+<div class="flex flex-col">
+<span class="text-base font-bold text-slate-900 dark:text-white leading-tight">Entertainment</span>
+<span class="text-sm font-medium text-slate-500 dark:text-primary/80 mt-0.5">$200.00</span>
+</div>
+</div>
+<div class="flex items-center gap-1 opacity-60 group-hover:opacity-100 transition-opacity">
+<button aria-label="Edit Entertainment" class="p-2 rounded-full hover:bg-slate-200 dark:hover:bg-white/10 text-slate-400 dark:text-slate-400 dark:hover:text-white transition-colors">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+<button aria-label="Delete Entertainment" class="p-2 rounded-full hover:bg-red-100 dark:hover:bg-red-500/20 text-slate-400 dark:text-slate-400 hover:text-red-500 dark:hover:text-red-400 transition-colors">
+<span class="material-symbols-outlined text-[20px]">delete</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Footer Disclaimer -->
+<div class="mt-8 flex items-start gap-3 px-2 opacity-70">
+<span class="material-symbols-outlined text-slate-500 dark:text-slate-400 text-sm mt-0.5">info</span>
+<p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
+                Changes made to planned amounts will apply to future monthly budgets starting next month. Closed months will remain unchanged.
+            </p>
+</div>
+</main>
+</body></html>

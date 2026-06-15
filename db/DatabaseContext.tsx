@@ -12,14 +12,19 @@ import {
   getVaultEntries,
   setSalary,
   updateCategory,
-  updateSpentAmount,
+  // New transactional queries
+  addTransaction,
+  deleteTransaction as dbDeleteTransaction,
+  getTransactions,
+  addVaultTransaction,
 } from './queries';
 import type {
   ExpenseCategory,
   ExpenseEntryWithCategory,
   Month,
   MonthSummary,
-  VaultEntry,
+  Transaction,
+  VaultTransaction,
 } from './types';
 
 // ─────────────────────────────────────────────
@@ -37,8 +42,13 @@ interface DatabaseContextValue {
   // Actions
   initCurrentMonth: () => Promise<void>;
   saveSalary: (amount: number) => Promise<void>;
-  saveSpentAmount: (entryId: number, amount: number) => Promise<void>;
+  saveSpentAmount: (entryId: number, amount: number) => Promise<void>; // Backwards compatible
   confirmCloseMonth: () => Promise<void>;
+
+  // Transaction-specific Actions
+  addNewTransaction: (budgetId: number, amount: number, description: string) => Promise<void>;
+  removeTransaction: (transactionId: number) => Promise<void>;
+  getTransactionsForBudget: (budgetId: number) => Promise<Transaction[]>;
 
   // Categories
   categories: ExpenseCategory[];
@@ -47,9 +57,10 @@ interface DatabaseContextValue {
   editCategory: (id: number, name: string, description: string, amount: number) => Promise<void>;
 
   // Vault
-  vaultEntries: (VaultEntry & { year: number; month: number })[];
+  vaultEntries: (VaultTransaction & { year: number; month: number })[];
   vaultBalance: number;
   refreshVault: () => Promise<void>;
+  addManualVaultTx: (amount: number, type: 'deposit' | 'withdrawal', note?: string) => Promise<void>;
 
   // All months (for history)
   allMonths: Month[];
@@ -67,7 +78,7 @@ export const DatabaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [expenses, setExpenses] = useState<ExpenseEntryWithCategory[]>([]);
   const [summary, setSummary] = useState<MonthSummary | null>(null);
   const [categories, setCategories] = useState<ExpenseCategory[]>([]);
-  const [vaultEntries, setVaultEntries] = useState<(VaultEntry & { year: number; month: number })[]>([]);
+  const [vaultEntries, setVaultEntries] = useState<(VaultTransaction & { year: number; month: number })[]>([]);
   const [vaultBalance, setVaultBalance] = useState(0);
   const [allMonths, setAllMonths] = useState<Month[]>([]);
 
@@ -108,9 +119,16 @@ export const DatabaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     setSummary(s);
   }, [currentMonth]);
 
-  // ── Spent amount ──────────────────────────
+  // ── Spent amount (Backwards Compatible single-transaction reset) ──
   const saveSpentAmount = useCallback(async (entryId: number, amount: number) => {
-    await updateSpentAmount(entryId, amount);
+    const db = await getDb();
+    await db.runAsync('DELETE FROM transactions WHERE budget_id = ?', [entryId]);
+    if (amount > 0) {
+      await db.runAsync(
+        'INSERT INTO transactions (budget_id, amount, description, spent_at) VALUES (?, ?, ?, ?)',
+        [entryId, amount, 'Manual Entry', new Date().toISOString()]
+      );
+    }
     if (!currentMonth) return;
     const entries = await getExpenseEntries(currentMonth.id);
     setExpenses(entries);
@@ -125,6 +143,29 @@ export const DatabaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     await initCurrentMonth();
     await refreshVault();
   }, [currentMonth, summary]);
+
+  // ── Transaction Operations ─────────────────
+  const addNewTransaction = useCallback(async (budgetId: number, amount: number, description: string) => {
+    await addTransaction(budgetId, amount, description);
+    if (!currentMonth) return;
+    const entries = await getExpenseEntries(currentMonth.id);
+    setExpenses(entries);
+    const s = await getMonthSummary(currentMonth.id);
+    setSummary(s);
+  }, [currentMonth]);
+
+  const removeTransaction = useCallback(async (transactionId: number) => {
+    await dbDeleteTransaction(transactionId);
+    if (!currentMonth) return;
+    const entries = await getExpenseEntries(currentMonth.id);
+    setExpenses(entries);
+    const s = await getMonthSummary(currentMonth.id);
+    setSummary(s);
+  }, [currentMonth]);
+
+  const getTransactionsForBudget = useCallback(async (budgetId: number) => {
+    return getTransactions(budgetId);
+  }, []);
 
   // ── Categories ────────────────────────────
   const refreshCategories = useCallback(async () => {
@@ -152,6 +193,11 @@ export const DatabaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     setVaultBalance(balance);
   }, []);
 
+  const addManualVaultTx = useCallback(async (amount: number, type: 'deposit' | 'withdrawal', note?: string) => {
+    await addVaultTransaction(currentMonth?.id ?? null, amount, type, note);
+    await refreshVault();
+  }, [currentMonth]);
+
   return (
     <DatabaseContext.Provider
       value={{
@@ -164,6 +210,9 @@ export const DatabaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         saveSalary,
         saveSpentAmount,
         confirmCloseMonth,
+        addNewTransaction,
+        removeTransaction,
+        getTransactionsForBudget,
         categories,
         refreshCategories,
         removeCategory,
@@ -171,6 +220,7 @@ export const DatabaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         vaultEntries,
         vaultBalance,
         refreshVault,
+        addManualVaultTx,
         allMonths,
       }}
     >

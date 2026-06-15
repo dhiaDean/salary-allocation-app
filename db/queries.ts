@@ -1,11 +1,11 @@
 import { getDb } from './database';
 import type {
   ExpenseCategory,
-  ExpenseEntry,
   ExpenseEntryWithCategory,
   Month,
   MonthSummary,
-  VaultEntry,
+  Transaction,
+  VaultTransaction,
 } from './types';
 
 // ─────────────────────────────────────────────
@@ -24,15 +24,16 @@ export async function getOrCreateMonth(year: number, month: number): Promise<Mon
       `INSERT INTO months (year, month, status) VALUES (?, ?, 'open')`,
       [year, month]
     );
-    row = await db.getFirstAsync<Month>('SELECT * FROM months WHERE id = ?', [result.lastInsertRowId]);
+    const monthId = result.lastInsertRowId;
+    row = await db.getFirstAsync<Month>('SELECT * FROM months WHERE id = ?', [monthId]);
 
-    // Create expense entries from current active categories
+    // Create monthly budget snapshots from current active categories
     const categories = await getActiveCategories();
     for (const cat of categories) {
       await db.runAsync(
-        `INSERT OR IGNORE INTO expense_entries (month_id, category_id, planned_amount, spent_amount)
-         VALUES (?, ?, ?, 0)`,
-        [result.lastInsertRowId, cat.id, cat.planned_amount]
+        `INSERT OR IGNORE INTO monthly_budgets (month_id, category_id, planned_amount)
+         VALUES (?, ?, ?)`,
+        [monthId, cat.id, cat.planned_amount]
       );
     }
   }
@@ -47,7 +48,7 @@ export async function getAllMonths(): Promise<Month[]> {
   );
 }
 
-/** Close a month: set status to closed, create vault entry */
+/** Close a month: set status to closed, create vault transaction */
 export async function closeMonth(monthId: number, savingsAmount: number, note?: string): Promise<void> {
   const db = await getDb();
   const now = new Date().toISOString();
@@ -56,48 +57,47 @@ export async function closeMonth(monthId: number, savingsAmount: number, note?: 
     [now, monthId]
   );
   await db.runAsync(
-    `INSERT INTO vault_entries (month_id, amount, note, created_at) VALUES (?, ?, ?, ?)`,
-    [monthId, savingsAmount, note ?? null, now]
+    `INSERT INTO vault_transactions (month_id, amount, transaction_type, note, created_at) VALUES (?, ?, 'deposit', ?, ?)`,
+    [monthId, savingsAmount, note ?? 'Monthly Close Balance', now]
   );
 }
 
 // ─────────────────────────────────────────────
-//  SALARY
+//  INCOME / SALARY
 // ─────────────────────────────────────────────
 
-/** Get salary for a month (returns 0 if not set) */
+/** Get salary (total income) for a month (returns 0 if not set) */
 export async function getSalary(monthId: number): Promise<number> {
   const db = await getDb();
-  const row = await db.getFirstAsync<{ amount: number }>(
-    'SELECT amount FROM salary WHERE month_id = ? ORDER BY id DESC LIMIT 1',
+  const row = await db.getFirstAsync<{ total: number }>(
+    'SELECT COALESCE(SUM(amount), 0) as total FROM income_entries WHERE month_id = ?',
     [monthId]
   );
-  return row?.amount ?? 0;
+  return row?.total ?? 0;
 }
 
-/** Set / update salary for a month */
+/** Set / update default primary salary for a month */
 export async function setSalary(monthId: number, amount: number): Promise<void> {
   const db = await getDb();
   const existing = await db.getFirstAsync<{ id: number }>(
-    'SELECT id FROM salary WHERE month_id = ?',
+    "SELECT id FROM income_entries WHERE month_id = ? AND source_name = 'Primary Salary'",
     [monthId]
   );
   if (existing) {
-    await db.runAsync('UPDATE salary SET amount = ?, entered_at = ? WHERE month_id = ?', [
-      amount,
-      new Date().toISOString(),
-      monthId,
-    ]);
+    await db.runAsync(
+      "UPDATE income_entries SET amount = ?, received_at = ? WHERE id = ?",
+      [amount, new Date().toISOString(), existing.id]
+    );
   } else {
     await db.runAsync(
-      'INSERT INTO salary (month_id, amount, entered_at) VALUES (?, ?, ?)',
+      "INSERT INTO income_entries (month_id, source_name, amount, received_at) VALUES (?, 'Primary Salary', ?, ?)",
       [monthId, amount, new Date().toISOString()]
     );
   }
 }
 
 // ─────────────────────────────────────────────
-//  EXPENSE CATEGORIES
+//  EXPENSE CATEGORIES (Templates)
 // ─────────────────────────────────────────────
 
 export async function getActiveCategories(): Promise<ExpenseCategory[]> {
@@ -143,74 +143,130 @@ export async function deleteCategory(id: number): Promise<void> {
 }
 
 // ─────────────────────────────────────────────
-//  EXPENSE ENTRIES (per month)
+//  MONTHLY BUDGETS & TRANSACTION ENTRIES
 // ─────────────────────────────────────────────
 
-/** Get all expense entries for a month, joined with category info */
+/** Get all monthly budgets with category info and computed spent amount */
 export async function getExpenseEntries(monthId: number): Promise<ExpenseEntryWithCategory[]> {
   const db = await getDb();
   return db.getAllAsync<ExpenseEntryWithCategory>(
-    `SELECT ee.*, ec.name, ec.description, ec.icon, ec.color
-     FROM expense_entries ee
-     JOIN expense_categories ec ON ec.id = ee.category_id
-     WHERE ee.month_id = ?
+    `SELECT 
+       mb.id,
+       mb.month_id,
+       mb.category_id,
+       mb.planned_amount,
+       COALESCE((SELECT SUM(t.amount) FROM transactions t WHERE t.budget_id = mb.id), 0) AS spent_amount,
+       ec.name,
+       ec.description,
+       ec.icon,
+       ec.color
+     FROM monthly_budgets mb
+     JOIN expense_categories ec ON ec.id = mb.category_id
+     WHERE mb.month_id = ?
      ORDER BY ec.id ASC`,
     [monthId]
   );
 }
 
-/** Update the spent amount for a specific entry */
-export async function updateSpentAmount(entryId: number, spentAmount: number): Promise<void> {
+/** Get transactions for a specific monthly budget (category in month) */
+export async function getTransactions(budgetId: number): Promise<Transaction[]> {
   const db = await getDb();
-  await db.runAsync(
-    'UPDATE expense_entries SET spent_amount = ? WHERE id = ?',
-    [spentAmount, entryId]
+  return db.getAllAsync<Transaction>(
+    'SELECT * FROM transactions WHERE budget_id = ? ORDER BY spent_at DESC',
+    [budgetId]
   );
 }
 
+/** Add a new transaction (updates computed spent_amount) */
+export async function addTransaction(
+  budgetId: number,
+  amount: number,
+  description: string
+): Promise<number> {
+  const db = await getDb();
+  const result = await db.runAsync(
+    'INSERT INTO transactions (budget_id, amount, description, spent_at) VALUES (?, ?, ?, ?)',
+    [budgetId, amount, description, new Date().toISOString()]
+  );
+  return result.lastInsertRowId;
+}
+
+/** Delete a transaction */
+export async function deleteTransaction(id: number): Promise<void> {
+  const db = await getDb();
+  await db.runAsync('DELETE FROM transactions WHERE id = ?', [id]);
+}
+
 // ─────────────────────────────────────────────
-//  VAULT ENTRIES
+//  VAULT TRANSACTIONS
 // ─────────────────────────────────────────────
 
-export async function getVaultEntries(): Promise<(VaultEntry & { year: number; month: number })[]> {
+export async function getVaultEntries(): Promise<(VaultTransaction & { year: number; month: number })[]> {
   const db = await getDb();
   return db.getAllAsync(
-    `SELECT ve.*, m.year, m.month
-     FROM vault_entries ve
-     JOIN months m ON m.id = ve.month_id
-     ORDER BY ve.created_at DESC`
+    `SELECT vt.*, COALESCE(m.year, 0) as year, COALESCE(m.month, 0) as month
+     FROM vault_transactions vt
+     LEFT JOIN months m ON m.id = vt.month_id
+     ORDER BY vt.created_at DESC`
   );
+}
+
+export async function addVaultTransaction(
+  monthId: number | null,
+  amount: number,
+  transactionType: 'deposit' | 'withdrawal',
+  note?: string
+): Promise<number> {
+  const db = await getDb();
+  const factor = transactionType === 'withdrawal' ? -1 : 1;
+  const signedAmount = Math.abs(amount) * factor;
+  const result = await db.runAsync(
+    `INSERT INTO vault_transactions (month_id, amount, transaction_type, note, created_at)
+     VALUES (?, ?, ?, ?, ?)`,
+    [monthId, signedAmount, transactionType, note ?? null, new Date().toISOString()]
+  );
+  return result.lastInsertRowId;
 }
 
 export async function getTotalVaultBalance(): Promise<number> {
   const db = await getDb();
   const row = await db.getFirstAsync<{ total: number }>(
-    'SELECT COALESCE(SUM(amount), 0) as total FROM vault_entries'
+    'SELECT COALESCE(SUM(amount), 0) as total FROM vault_transactions'
   );
   return row?.total ?? 0;
 }
 
 // ─────────────────────────────────────────────
-//  SUMMARY helpers
+//  SUMMARY HELPERS
 // ─────────────────────────────────────────────
 
 export async function getMonthSummary(monthId: number): Promise<MonthSummary> {
   const db = await getDb();
   const month = await db.getFirstAsync<Month>('SELECT * FROM months WHERE id = ?', [monthId]);
   const salary = await getSalary(monthId);
-  const agg = await db.getFirstAsync<{ totalSpent: number; totalPlanned: number }>(
-    `SELECT COALESCE(SUM(spent_amount), 0) as totalSpent,
-            COALESCE(SUM(planned_amount), 0) as totalPlanned
-     FROM expense_entries WHERE month_id = ?`,
+
+  // Sum planned amount from monthly_budgets
+  const plannedRow = await db.getFirstAsync<{ totalPlanned: number }>(
+    'SELECT COALESCE(SUM(planned_amount), 0) as totalPlanned FROM monthly_budgets WHERE month_id = ?',
     [monthId]
   );
-  const totalSpent = agg?.totalSpent ?? 0;
-  const totalPlanned = agg?.totalPlanned ?? 0;
+  const totalPlanned = plannedRow?.totalPlanned ?? 0;
+
+  // Sum spent amount from transactions related to this month's budgets
+  const spentRow = await db.getFirstAsync<{ totalSpent: number }>(
+    `SELECT COALESCE(SUM(t.amount), 0) as totalSpent
+     FROM transactions t
+     JOIN monthly_budgets mb ON mb.id = t.budget_id
+     WHERE mb.month_id = ?`,
+    [monthId]
+  );
+  const totalSpent = spentRow?.totalSpent ?? 0;
+
   return {
     month: month!,
     salary,
     totalSpent,
     totalPlanned,
-    projectedSavings: Math.max(salary - totalSpent, 0),
+    projectedSavings: salary - totalSpent,
   };
 }

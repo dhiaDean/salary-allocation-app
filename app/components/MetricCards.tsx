@@ -1,10 +1,12 @@
 import { MaterialIcons } from '@expo/vector-icons';
-import React from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import React, { useState } from 'react';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useDatabase } from '../../db/DatabaseContext';
+import AdjustSalaryModal from './AdjustSalaryModal';
 
 const MetricCards: React.FC = () => {
-  const { summary, vaultBalance } = useDatabase();
+  const { summary, vaultBalance, currentMonth, saveSalary } = useDatabase();
+  const [modalVisible, setModalVisible] = useState(false);
 
   const salary = summary?.salary ?? 0;
   const totalSpent = summary?.totalSpent ?? 0;
@@ -12,7 +14,8 @@ const MetricCards: React.FC = () => {
   const usagePct = salary > 0 ? Math.min((totalSpent / salary) * 100, 100) : 0;
 
   return (
-    <ScrollView
+    <>
+      <ScrollView
       horizontal
       showsHorizontalScrollIndicator={false}
       contentContainerStyle={styles.scrollViewContainer}
@@ -60,21 +63,42 @@ const MetricCards: React.FC = () => {
       </View>
 
       {/* Monthly Salary Card */}
-      <View style={[styles.card, { width: 200 }]}>
+      <TouchableOpacity
+        style={[styles.card, { width: 200 }]}
+        activeOpacity={currentMonth?.status === 'open' ? 0.7 : 1}
+        onPress={() => {
+          if (currentMonth?.status === 'open') {
+            setModalVisible(true);
+          }
+        }}
+      >
         <View style={styles.cardHeader}>
           <View style={[styles.iconWrapper, { backgroundColor: 'rgba(255,255,255,0.1)' }]}>
             <MaterialIcons name="payments" size={24} color="#93c8a5" />
           </View>
           <Text style={styles.cardTitle}>Monthly Salary</Text>
+          {currentMonth?.status === 'open' && (
+            <MaterialIcons name="edit" size={14} color="#93c8a5" style={{ marginLeft: 'auto' }} />
+          )}
         </View>
         <View>
           <Text style={styles.balanceText}>
             ${salary.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </Text>
-          <Text style={styles.salaryText}>Fixed Income</Text>
+          <Text style={styles.salaryText}>
+            {currentMonth?.status === 'open' ? 'Tap to adjust' : 'Fixed Income'}
+          </Text>
         </View>
-      </View>
+      </TouchableOpacity>
     </ScrollView>
+
+    <AdjustSalaryModal
+      visible={modalVisible}
+      currentSalary={salary}
+      onSave={saveSalary}
+      onClose={() => setModalVisible(false)}
+    />
+    </>
   );
 };
 

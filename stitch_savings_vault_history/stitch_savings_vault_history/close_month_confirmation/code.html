@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Close Month Confirmation</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#19e65e",
+                        "background-light": "#f6f8f6",
+                        "background-dark": "#112116",
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        /* Custom backdrop blur for older browser support if needed, though Tailwind's is standard */
+        .glass-panel {
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display antialiased overflow-hidden h-screen w-full relative">
+<!-- Main Background Content (Salary & Expenses Dashboard) -->
+<!-- We apply a blur and brightness filter to this container to simulate the modal focus -->
+<div class="h-full w-full flex flex-col blur-sm brightness-50 pointer-events-none select-none transition-all duration-300">
+<!-- Top App Bar -->
+<div class="flex items-center bg-background-light dark:bg-background-dark p-4 pb-2 justify-between border-b border-gray-200 dark:border-gray-800">
+<div class="text-gray-900 dark:text-white flex size-12 shrink-0 items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+<span class="material-symbols-outlined">menu</span>
+</div>
+<h2 class="text-gray-900 dark:text-white text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center">Salary &amp; Expenses</h2>
+<div class="flex w-12 items-center justify-end">
+<button class="flex size-12 cursor-pointer items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-900 dark:text-white transition-colors">
+<span class="material-symbols-outlined">calendar_month</span>
+</button>
+</div>
+</div>
+<!-- Scrollable Content Area -->
+<div class="flex-1 overflow-y-auto p-4 space-y-6">
+<!-- Date Selector / Current Month -->
+<div class="flex items-center justify-between px-2">
+<button class="text-gray-500 dark:text-gray-400">
+<span class="material-symbols-outlined">chevron_left</span>
+</button>
+<h3 class="text-xl font-extrabold text-gray-900 dark:text-white">January 2026</h3>
+<button class="text-gray-500 dark:text-gray-400">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+</div>
+<!-- Stats Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<!-- Income Card -->
+<div class="flex flex-col gap-2 rounded-xl p-6 bg-white dark:bg-[#1C2E22] shadow-sm border border-gray-100 dark:border-gray-800">
+<div class="flex items-center gap-2">
+<div class="p-1.5 rounded bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400">
+<span class="material-symbols-outlined text-[20px]">trending_up</span>
+</div>
+<p class="text-gray-600 dark:text-gray-300 text-sm font-medium leading-normal">Income</p>
+</div>
+<p class="text-gray-900 dark:text-white tracking-tight text-3xl font-bold leading-tight mt-1">$5,200.00</p>
+</div>
+<!-- Expenses Card -->
+<div class="flex flex-col gap-2 rounded-xl p-6 bg-white dark:bg-[#1C2E22] shadow-sm border border-gray-100 dark:border-gray-800">
+<div class="flex items-center gap-2">
+<div class="p-1.5 rounded bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400">
+<span class="material-symbols-outlined text-[20px]">trending_down</span>
+</div>
+<p class="text-gray-600 dark:text-gray-300 text-sm font-medium leading-normal">Expenses</p>
+</div>
+<p class="text-gray-900 dark:text-white tracking-tight text-3xl font-bold leading-tight mt-1">$4,000.00</p>
+</div>
+<!-- Savings Vault Card (Full Width) -->
+<div class="col-span-1 md:col-span-2 flex flex-col gap-2 rounded-xl p-6 bg-primary/10 dark:bg-primary/5 shadow-sm border border-primary/20">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<div class="p-1.5 rounded bg-primary/20 text-primary">
+<span class="material-symbols-outlined text-[20px]">savings</span>
+</div>
+<p class="text-gray-900 dark:text-white text-base font-medium leading-normal">Potential Savings</p>
+</div>
+<span class="text-xs font-bold uppercase tracking-wider text-primary bg-primary/10 px-2 py-1 rounded">Projected</span>
+</div>
+<p class="text-primary tracking-tight text-4xl font-extrabold leading-tight mt-2">$1,200.00</p>
+<div class="w-full bg-gray-200 dark:bg-gray-700 h-2 rounded-full mt-4 overflow-hidden">
+<div class="bg-primary h-full rounded-full" style="width: 75%"></div>
+</div>
+<p class="text-xs text-gray-500 dark:text-gray-400 mt-1 text-right">75% of goal</p>
+</div>
+</div>
+<!-- Visualization / Chart Placeholder -->
+<div class="w-full gap-1 overflow-hidden bg-white dark:bg-[#1C2E22] aspect-[16/9] rounded-xl flex shadow-sm border border-gray-100 dark:border-gray-800 relative">
+<div class="absolute inset-0 p-4 flex flex-col">
+<div class="flex justify-between items-center mb-4">
+<h4 class="font-bold text-gray-900 dark:text-white">Monthly Trend</h4>
+<span class="material-symbols-outlined text-gray-400">more_horiz</span>
+</div>
+<!-- Abstract Chart Bars -->
+<div class="flex items-end justify-between flex-1 gap-2 px-2 pb-2">
+<div class="w-full bg-primary/20 rounded-t-sm h-[40%]"></div>
+<div class="w-full bg-primary/30 rounded-t-sm h-[60%]"></div>
+<div class="w-full bg-primary/40 rounded-t-sm h-[30%]"></div>
+<div class="w-full bg-primary/50 rounded-t-sm h-[80%]"></div>
+<div class="w-full bg-primary/60 rounded-t-sm h-[50%]"></div>
+<div class="w-full bg-primary rounded-t-sm h-[75%] relative group">
+<div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">Current</div>
+</div>
+<div class="w-full bg-gray-200 dark:bg-gray-700 rounded-t-sm h-[20%]"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Modal Overlay -->
+<div class="absolute inset-0 z-50 flex items-center justify-center p-4">
+<!-- Backdrop -->
+<div class="absolute inset-0 bg-black/60 glass-panel"></div>
+<!-- Modal Card -->
+<div class="relative w-full max-w-sm bg-white dark:bg-[#1F2937] rounded-2xl shadow-2xl transform transition-all scale-100 border border-gray-100 dark:border-gray-700 overflow-hidden">
+<!-- Top Decoration Line -->
+<div class="h-1.5 w-full bg-gradient-to-r from-primary/50 via-primary to-primary/50"></div>
+<div class="px-6 pt-8 pb-6 flex flex-col items-center text-center">
+<!-- Icon -->
+<div class="mb-5 relative">
+<div class="absolute inset-0 bg-primary/20 rounded-full blur-md animate-pulse"></div>
+<div class="relative bg-[#1C2E22] border-2 border-primary/30 rounded-full p-4 flex items-center justify-center shadow-lg">
+<span class="material-symbols-outlined text-primary text-[32px]">lock</span>
+</div>
+</div>
+<!-- Headline -->
+<h2 class="text-gray-900 dark:text-white tracking-tight text-2xl font-extrabold leading-tight mb-3">
+                    Close January 2026?
+                </h2>
+<!-- Body Text -->
+<p class="text-gray-600 dark:text-gray-300 text-[15px] font-medium leading-relaxed px-2">
+                    Closing the month will lock all values permanently and transfer savings <span class="text-primary font-bold tracking-wide">$1,200</span> to the Savings Vault.
+                </p>
+<!-- Actions -->
+<div class="w-full mt-8 flex flex-col gap-3">
+<button class="w-full group relative flex items-center justify-center gap-2 bg-primary hover:bg-[#16cc53] active:bg-[#14b84b] text-background-dark font-bold text-base py-3.5 px-6 rounded-lg transition-all duration-200 shadow-[0_0_20px_-5px_rgba(25,230,94,0.4)]">
+<span>Confirm &amp; Close</span>
+<span class="material-symbols-outlined text-lg transition-transform group-hover:translate-x-1">arrow_forward</span>
+</button>
+<button class="w-full flex items-center justify-center bg-transparent border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-200 font-bold text-base py-3.5 px-6 rounded-lg transition-colors">
+                        Cancel
+                    </button>
+</div>
+</div>
+<!-- Subtle bottom text -->
+<div class="bg-gray-50 dark:bg-[#1a232f] py-3 text-center border-t border-gray-100 dark:border-gray-800">
+<p class="text-xs text-gray-500 dark:text-gray-400 font-medium">Action cannot be undone</p>
+</div>
+</div>
+</div>
+</body></html>

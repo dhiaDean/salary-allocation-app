@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Dashboard Overview</title>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Theme Config -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#19e65e",
+                        "background-light": "#f6f8f6",
+                        "background-dark": "#112116", // Deep charcoal/green mix as requested
+                        "card-dark": "#1b2e21", // Slightly lighter for cards
+                        "secondary-text": "#93c8a5",
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "2xl": "1rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom scrollbar hiding for clean UI */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white font-display antialiased selection:bg-primary selection:text-black">
+<div class="relative flex h-full min-h-screen w-full flex-col overflow-x-hidden pb-24">
+<!-- Header Section -->
+<header class="flex items-center justify-between p-6 pt-8">
+<div class="flex items-center gap-4">
+<div class="relative group cursor-pointer">
+<div class="bg-center bg-no-repeat bg-cover rounded-full h-12 w-12 ring-2 ring-primary/20" data-alt="User profile avatar showing a smiling person" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCS-dpdgd2gFdRm2zilP6BQCXbfBAKw3AUy29L9VUA3d7HwGVYzyvlEuwAWjPvsNMzVVyue0lwQN_zmFXeee2CrRChCpgS3boAdRbPefg1OBncPWy9EgTs7oFQ3olkRzJS_40uHGaMMy9jiN5Hl7PegqMpE-TMAqZ7299BA0uAADDBHB0F1lDgANJuAp-K_qyZaOR77Fp_lRVrkgzyoHwtzjpnFm7JTSSYNW2F-BNt4EwDbS6UeH6kBx9_ruQYHZXdaovSnWOe8tBE");'>
+</div>
+<div class="absolute bottom-0 right-0 h-3 w-3 bg-primary rounded-full border-2 border-background-dark"></div>
+</div>
+<div class="flex flex-col">
+<span class="text-secondary-text text-sm font-medium">Good Morning,</span>
+<h1 class="text-white text-xl font-bold leading-tight">Alex</h1>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<div class="hidden sm:flex px-4 py-2 bg-white/5 rounded-full border border-white/5 items-center gap-2 cursor-pointer hover:bg-white/10 transition-colors">
+<span class="text-sm font-medium text-white">January 2026</span>
+<span class="material-symbols-outlined text-sm">expand_more</span>
+</div>
+<!-- Mobile Date Pill -->
+<div class="sm:hidden flex px-3 py-1.5 bg-white/5 rounded-full border border-white/5 items-center gap-1 cursor-pointer">
+<span class="text-xs font-bold text-primary">Jan '26</span>
+</div>
+<button class="flex items-center justify-center h-10 w-10 rounded-full bg-white/5 hover:bg-white/10 text-white transition-colors relative">
+<span class="material-symbols-outlined text-[20px]">notifications</span>
+<span class="absolute top-2.5 right-2.5 h-2 w-2 bg-red-500 rounded-full border border-background-dark"></span>
+</button>
+</div>
+</header>
+<!-- Main Metrics Carousel -->
+<!-- Using horizontal scroll for mobile friendliness -->
+<div class="w-full overflow-x-auto no-scrollbar px-6 pb-2">
+<div class="flex gap-4 min-w-max">
+<!-- Card 1: Vault (Primary focus) -->
+<div class="flex flex-col justify-between p-5 rounded-2xl bg-gradient-to-br from-[#1E3A28] to-card-dark border border-white/5 w-[260px] h-[160px] relative overflow-hidden group">
+<div class="absolute -right-4 -top-4 bg-primary/10 w-24 h-24 rounded-full blur-2xl"></div>
+<div class="flex justify-between items-start z-10">
+<div class="flex items-center gap-2">
+<div class="p-1.5 rounded-lg bg-white/10 text-primary">
+<span class="material-symbols-outlined text-[20px]">lock</span>
+</div>
+<span class="text-gray-300 text-sm font-medium">Vault Balance</span>
+</div>
+</div>
+<div class="flex flex-col gap-1 z-10">
+<span class="text-3xl font-bold tracking-tight text-white">$12,450.00</span>
+<div class="flex items-center gap-1 text-primary text-sm font-medium bg-primary/10 w-fit px-2 py-0.5 rounded-md">
+<span class="material-symbols-outlined text-[16px]">trending_up</span>
+<span>+5.2%</span>
+</div>
+</div>
+</div>
+<!-- Card 2: Current Savings (Actionable) -->
+<div class="flex flex-col justify-between p-5 rounded-2xl bg-card-dark border border-white/5 w-[220px] h-[160px]">
+<div class="flex justify-between items-start">
+<div class="flex items-center gap-2">
+<div class="p-1.5 rounded-lg bg-white/5 text-secondary-text">
+<span class="material-symbols-outlined text-[20px]">account_balance_wallet</span>
+</div>
+<span class="text-gray-300 text-sm font-medium">Left to Spend</span>
+</div>
+</div>
+<div class="flex flex-col gap-1">
+<span class="text-2xl font-bold tracking-tight text-primary">$1,850.00</span>
+<span class="text-gray-400 text-xs">of $4,200 Salary</span>
+</div>
+<!-- Mini progress for this card -->
+<div class="w-full bg-white/10 rounded-full h-1.5 mt-2">
+<div class="bg-primary h-1.5 rounded-full" style="width: 44%"></div>
+</div>
+</div>
+<!-- Card 3: Monthly Salary (Static) -->
+<div class="flex flex-col justify-between p-5 rounded-2xl bg-card-dark border border-white/5 w-[200px] h-[160px]">
+<div class="flex justify-between items-start">
+<div class="flex items-center gap-2">
+<div class="p-1.5 rounded-lg bg-white/5 text-secondary-text">
+<span class="material-symbols-outlined text-[20px]">payments</span>
+</div>
+<span class="text-gray-300 text-sm font-medium">Monthly Salary</span>
+</div>
+</div>
+<div class="flex flex-col gap-1">
+<span class="text-2xl font-bold tracking-tight text-white">$4,200.00</span>
+<span class="text-gray-400 text-xs">Fixed Income</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Spending Progress Section -->
+<div class="px-6 mt-6">
+<div class="bg-card-dark rounded-2xl p-5 border border-white/5">
+<div class="flex justify-between items-end mb-3">
+<div>
+<h3 class="text-white font-bold text-lg">Budget Usage</h3>
+<p class="text-secondary-text text-sm">January 2026</p>
+</div>
+<div class="text-right">
+<span class="text-2xl font-bold text-white">65%</span>
+<p class="text-xs text-gray-400">Used</p>
+</div>
+</div>
+<!-- Multi-segment progress bar simulation -->
+<div class="relative h-4 w-full bg-[#112217] rounded-full overflow-hidden flex">
+<!-- Spent -->
+<div class="h-full bg-gradient-to-r from-green-600 to-primary w-[65%] rounded-l-full relative group">
+<!-- Tooltip on hover/tap could go here -->
+</div>
+<!-- Remaining projected -->
+<div class="h-full bg-white/10 w-[35%]"></div>
+<!-- Target Marker (e.g., 80% limit) -->
+<div class="absolute top-0 bottom-0 w-0.5 bg-white left-[80%] opacity-50 z-10"></div>
+</div>
+<div class="flex justify-between mt-3 text-xs font-medium">
+<span class="text-primary">$2,350 Spent</span>
+<span class="text-gray-400">$1,850 Remaining</span>
+</div>
+</div>
+</div>
+<!-- Quick Actions Grid -->
+<div class="px-6 mt-8 flex-1">
+<h2 class="text-white text-lg font-bold mb-4 flex items-center gap-2">
+                Quick Actions
+            </h2>
+<div class="grid grid-cols-2 gap-4">
+<!-- Primary Action -->
+<button class="col-span-2 bg-primary hover:bg-green-400 text-background-dark h-16 rounded-xl flex items-center justify-center font-bold text-base gap-2 shadow-lg shadow-green-900/20 active:scale-[0.98] transition-all">
+<span class="material-symbols-outlined">add_circle</span>
+                    Update Spent Amount
+                </button>
+<!-- Secondary Action -->
+<button class="bg-card-dark hover:bg-white/5 border border-white/5 h-28 rounded-xl flex flex-col items-center justify-center gap-3 active:scale-[0.98] transition-all group">
+<div class="h-10 w-10 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+<span class="material-symbols-outlined text-white group-hover:text-primary transition-colors">lock_open</span>
+</div>
+<span class="text-sm font-medium text-white">View Vault</span>
+</button>
+<!-- Tertiary Action -->
+<button class="bg-card-dark hover:bg-white/5 border border-white/5 h-28 rounded-xl flex flex-col items-center justify-center gap-3 active:scale-[0.98] transition-all group">
+<div class="h-10 w-10 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+<span class="material-symbols-outlined text-white group-hover:text-primary transition-colors">insights</span>
+</div>
+<span class="text-sm font-medium text-white">Analyze Trends</span>
+</button>
+</div>
+</div>
+<!-- Spacer for Bottom Nav -->
+<div class="h-6"></div>
+</div>
+<!-- Bottom Navigation (iOS Style) -->
+<nav class="fixed bottom-0 w-full bg-[#112116]/90 backdrop-blur-lg border-t border-white/5 px-6 py-4 pb-8 z-50">
+<div class="flex justify-between items-center max-w-md mx-auto">
+<button class="flex flex-col items-center gap-1 text-primary w-12">
+<span class="material-symbols-outlined text-[26px] fill-current">home</span>
+<span class="text-[10px] font-medium">Home</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-gray-400 hover:text-white transition-colors w-12">
+<span class="material-symbols-outlined text-[26px]">savings</span>
+<span class="text-[10px] font-medium">Vault</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-gray-400 hover:text-white transition-colors w-12">
+<span class="material-symbols-outlined text-[26px]">monitoring</span>
+<span class="text-[10px] font-medium">Trends</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-gray-400 hover:text-white transition-colors w-12">
+<span class="material-symbols-outlined text-[26px]">settings</span>
+<span class="text-[10px] font-medium">Settings</span>
+</button>
+</div>
+</nav>
+</body></html>
