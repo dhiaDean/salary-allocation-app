@@ -1,6 +1,6 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import React from 'react';
+import React, { useState } from 'react';
 import {
   ActivityIndicator,
   ScrollView,
@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDatabase } from '../../db/DatabaseContext';
+import MonthSelectorModal from '../components/MonthSelectorModal';
 
 const MONTH_NAMES = [
   '', 'January', 'February', 'March', 'April', 'May', 'June',
@@ -20,6 +21,7 @@ const MONTH_NAMES = [
 
 const SalaryExpensesClosedScreen: React.FC = () => {
   const { isReady, currentMonth, summary, expenses } = useDatabase();
+  const [monthModalVisible, setMonthModalVisible] = useState(false);
 
   if (!isReady || !currentMonth || !summary) {
     return (
@@ -40,7 +42,10 @@ const SalaryExpensesClosedScreen: React.FC = () => {
         <TouchableOpacity style={styles.iconBtn} onPress={() => router.back()}>
           <MaterialIcons name="arrow-back" size={24} color="#FFFFFF" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>{monthLabel}</Text>
+        <TouchableOpacity style={styles.monthSelector} onPress={() => setMonthModalVisible(true)}>
+          <Text style={styles.headerTitle}>{monthLabel}</Text>
+          <MaterialIcons name="expand-more" size={22} color="#9ca3af" />
+        </TouchableOpacity>
         <View style={{ width: 40 }} />
       </View>
 
@@ -141,6 +146,10 @@ const SalaryExpensesClosedScreen: React.FC = () => {
           <Text style={styles.readOnlyText}>Read-only mode</Text>
         </View>
       </ScrollView>
+      <MonthSelectorModal
+        visible={monthModalVisible}
+        onClose={() => setMonthModalVisible(false)}
+      />
     </SafeAreaView>
   );
 };
@@ -148,6 +157,7 @@ const SalaryExpensesClosedScreen: React.FC = () => {
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: '#112116' },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, height: 64, borderBottomWidth: 1, borderColor: '#1e3a28' },
+  monthSelector: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   iconBtn: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center', borderRadius: 20 },
   headerTitle: { color: '#FFFFFF', fontSize: 18, fontWeight: 'bold' },
   scrollContent: { paddingBottom: 32 },

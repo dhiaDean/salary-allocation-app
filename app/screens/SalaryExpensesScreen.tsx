@@ -18,6 +18,7 @@ import { useDatabase } from '../../db/DatabaseContext';
 import type { ExpenseEntryWithCategory } from '../../db/types';
 import CloseMonthModal from './CloseMonthModal';
 import TransactionManagerModal from '../components/TransactionManagerModal';
+import MonthSelectorModal from '../components/MonthSelectorModal';
 
 const MONTH_NAMES = [
   '', 'January', 'February', 'March', 'April', 'May', 'June',
@@ -37,6 +38,7 @@ const SalaryExpensesScreen: React.FC = () => {
 
   const [modalVisible, setModalVisible] = useState(false);
   const [salaryInput, setSalaryInput] = useState('');
+  const [monthModalVisible, setMonthModalVisible] = useState(false);
 
   // Transaction manager state
   const [txModalVisible, setTxModalVisible] = useState(false);
@@ -79,7 +81,7 @@ const SalaryExpensesScreen: React.FC = () => {
 
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity style={styles.monthSelector}>
+        <TouchableOpacity style={styles.monthSelector} onPress={() => setMonthModalVisible(true)}>
           <Text style={styles.headerTitle}>{monthLabel}</Text>
           <MaterialIcons name="expand-more" size={24} color="#9ca3af" />
         </TouchableOpacity>
@@ -205,6 +207,12 @@ const SalaryExpensesScreen: React.FC = () => {
           setTxModalVisible(false);
           setSelectedExpense(null);
         }}
+      />
+
+      {/* Month Selector Modal */}
+      <MonthSelectorModal
+        visible={monthModalVisible}
+        onClose={() => setMonthModalVisible(false)}
       />
 
       {/* Sticky Footer */}

@@ -7,20 +7,26 @@ import Drawer from '../components/Drawer';
 import Header from '../components/Header';
 import MetricCards from '../components/MetricCards';
 import QuickActions from '../components/QuickActions';
+import MonthSelectorModal from '../components/MonthSelectorModal';
 
 const Dashboard = () => {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [isMonthModalOpen, setIsMonthModalOpen] = useState(false);
 
   return (
     <>
       <ScrollView contentContainerStyle={styles.container}>
         {/* Dashboard Content */}
-        <Header onMenuPress={() => setIsDrawerOpen(true)} />
+        <Header 
+          onMenuPress={() => setIsDrawerOpen(true)} 
+          onDatePress={() => setIsMonthModalOpen(true)}
+        />
         <MetricCards />
         <BudgetUsage />
         <QuickActions />
       </ScrollView>
       <Drawer isOpen={isDrawerOpen} onClose={() => setIsDrawerOpen(false)} />
+      <MonthSelectorModal visible={isMonthModalOpen} onClose={() => setIsMonthModalOpen(false)} />
     </>
   );
 };

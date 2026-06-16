@@ -44,6 +44,8 @@ interface DatabaseContextValue {
   saveSalary: (amount: number) => Promise<void>;
   saveSpentAmount: (entryId: number, amount: number) => Promise<void>; // Backwards compatible
   confirmCloseMonth: () => Promise<void>;
+  changeActiveMonth: (monthId: number) => Promise<void>;
+  startNextMonth: () => Promise<void>;
 
   // Transaction-specific Actions
   addNewTransaction: (budgetId: number, amount: number, description: string) => Promise<void>;
@@ -144,6 +146,47 @@ export const DatabaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     await refreshVault();
   }, [currentMonth, summary]);
 
+  // ── Switch / Start Month ──────────────────
+  const changeActiveMonth = useCallback(async (monthId: number) => {
+    const db = await getDb();
+    const month = await db.getFirstAsync<Month>('SELECT * FROM months WHERE id = ?', [monthId]);
+    if (!month) return;
+    setCurrentMonth(month);
+
+    const entries = await getExpenseEntries(month.id);
+    setExpenses(entries);
+
+    const s = await getMonthSummary(month.id);
+    setSummary(s);
+    setSalaryState(s.salary);
+  }, []);
+
+  const startNextMonth = useCallback(async () => {
+    const db = await getDb();
+    const latest = await db.getFirstAsync<Month>(
+      'SELECT * FROM months ORDER BY year DESC, month DESC LIMIT 1'
+    );
+    let nextYear = new Date().getFullYear();
+    let nextMonth = new Date().getMonth() + 1;
+    if (latest) {
+      if (latest.month === 12) {
+        nextYear = latest.year + 1;
+        nextMonth = 1;
+      } else {
+        nextYear = latest.year;
+        nextMonth = latest.month + 1;
+      }
+    }
+    const newMonth = await getOrCreateMonth(nextYear, nextMonth);
+    
+    // Refresh the list of months
+    const months = await getAllMonths();
+    setAllMonths(months);
+
+    // Switch active view to the new month
+    await changeActiveMonth(newMonth.id);
+  }, [changeActiveMonth]);
+
   // ── Transaction Operations ─────────────────
   const addNewTransaction = useCallback(async (budgetId: number, amount: number, description: string) => {
     await addTransaction(budgetId, amount, description);
@@ -216,6 +259,8 @@ export const DatabaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         saveSalary,
         saveSpentAmount,
         confirmCloseMonth,
+        changeActiveMonth,
+        startNextMonth,
         addNewTransaction,
         removeTransaction,
         getTransactionsForBudget,

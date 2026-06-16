@@ -9,7 +9,10 @@ const MONTH_SHORT = [
   'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
 ];
 
-const Header: React.FC<{ onMenuPress?: () => void }> = ({ onMenuPress }) => {
+const Header: React.FC<{ onMenuPress?: () => void; onDatePress?: () => void }> = ({
+  onMenuPress,
+  onDatePress,
+}) => {
   const { currentMonth } = useDatabase();
 
   const dateLabel = currentMonth
@@ -24,9 +27,9 @@ const Header: React.FC<{ onMenuPress?: () => void }> = ({ onMenuPress }) => {
         </TouchableOpacity>
       </View>
       <View style={styles.headerActions}>
-        <View style={styles.dateBadge}>
+        <TouchableOpacity style={styles.dateBadge} onPress={onDatePress} activeOpacity={0.75}>
           <Text style={styles.dateText}>{dateLabel}</Text>
-        </View>
+        </TouchableOpacity>
       </View>
     </View>
   );
