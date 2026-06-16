@@ -1,8 +1,11 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import React, { useEffect, useRef } from 'react';
-import { Animated, Modal, Pressable, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Animated, Modal, Pressable, StyleSheet, Text, TouchableOpacity, View, Alert } from 'react-native';
+import { router } from 'expo-router';
+import { useDatabase } from '../../db/DatabaseContext';
 
 const Drawer: React.FC<{ isOpen: boolean; onClose: () => void; }> = ({ isOpen, onClose }) => {
+    const { currentMonth } = useDatabase();
     const slideAnim = useRef(new Animated.Value(-300)).current;
 
     useEffect(() => {
@@ -20,6 +23,25 @@ const Drawer: React.FC<{ isOpen: boolean; onClose: () => void; }> = ({ isOpen, o
             }).start();
         }
     }, [isOpen, slideAnim]);
+
+    const handleSalaryPlannerPress = () => {
+        onClose();
+        if (currentMonth?.status === 'closed') {
+            router.push('/salary-expenses-closed');
+        } else {
+            router.push('/salary-expenses');
+        }
+    };
+
+    const handleSettingsPress = () => {
+        onClose();
+        Alert.alert('Settings', 'Settings and configuration features are coming soon!');
+    };
+
+    const handleLogoutPress = () => {
+        onClose();
+        Alert.alert('Log Out', 'You have successfully logged out (Demo mode).');
+    };
 
     return (
         <Modal
@@ -39,7 +61,11 @@ const Drawer: React.FC<{ isOpen: boolean; onClose: () => void; }> = ({ isOpen, o
                         </View>
                         
                         <View style={styles.navSection}>
-                            <TouchableOpacity style={styles.navItemActive}>
+                            <TouchableOpacity 
+                                style={styles.navItemActive}
+                                onPress={handleSalaryPlannerPress}
+                                activeOpacity={0.7}
+                            >
                                 <MaterialIcons name="calendar-today" size={24} color="#19e65e" />
                                 <Text style={styles.navLabelActive}>Salary Planner</Text>
                             </TouchableOpacity>
@@ -54,14 +80,22 @@ const Drawer: React.FC<{ isOpen: boolean; onClose: () => void; }> = ({ isOpen, o
                             
                             <View style={styles.separator} />
                             
-                            <TouchableOpacity style={styles.navItem}>
+                            <TouchableOpacity 
+                                style={styles.navItem}
+                                onPress={handleSettingsPress}
+                                activeOpacity={0.7}
+                            >
                                 <MaterialIcons name="settings" size={24} color="#9ca3af" />
                                 <Text style={styles.navLabel}>Settings</Text>
                             </TouchableOpacity>
                         </View>
 
                         <View style={styles.footerSection}>
-                            <TouchableOpacity style={styles.logoutButton}>
+                            <TouchableOpacity 
+                                style={styles.logoutButton}
+                                onPress={handleLogoutPress}
+                                activeOpacity={0.7}
+                            >
                                 <MaterialIcons name="logout" size={20} color="#f87171" />
                                 <Text style={styles.logoutText}>Log Out</Text>
                             </TouchableOpacity>

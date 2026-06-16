@@ -2,20 +2,30 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useDatabase } from '../../db/DatabaseContext';
+
+const MONTH_SHORT = [
+  '', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+];
 
 const Header: React.FC<{ onMenuPress?: () => void }> = ({ onMenuPress }) => {
+  const { currentMonth } = useDatabase();
+
+  const dateLabel = currentMonth
+    ? `${MONTH_SHORT[currentMonth.month]} '${String(currentMonth.year).slice(-2)}`
+    : '---';
+
   return (
     <View style={styles.header}>
       <View style={styles.userInfo}>
         <TouchableOpacity onPress={onMenuPress} style={styles.menuButton}>
           <MaterialIcons name="menu" size={24} color="#FFFFFF" />
         </TouchableOpacity>
-        
-        
       </View>
       <View style={styles.headerActions}>
         <View style={styles.dateBadge}>
-          <Text style={styles.dateText}>Jan '26</Text>
+          <Text style={styles.dateText}>{dateLabel}</Text>
         </View>
       </View>
     </View>
