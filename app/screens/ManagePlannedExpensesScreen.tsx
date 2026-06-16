@@ -8,7 +8,6 @@ import {
   StatusBar,
   StyleSheet,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
@@ -29,10 +28,9 @@ const ManagePlannedExpensesScreen: React.FC = () => {
     currentMonth,
     expenses,
   } = useDatabase();
-  const [editingId, setEditingId] = useState<number | null>(null);
-  const [editValue, setEditValue] = useState('');
-  const [editName, setEditName] = useState('');
   const [addModalVisible, setAddModalVisible] = useState(false);
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [editingCategory, setEditingCategory] = useState<any>(null);
   const [txModalVisible, setTxModalVisible] = useState(false);
   const [selectedExpense, setSelectedExpense] = useState<ExpenseEntryWithCategory | null>(null);
 
@@ -44,23 +42,33 @@ const ManagePlannedExpensesScreen: React.FC = () => {
     );
   }
 
-  const handleEdit = (id: number, name: string, amount: number) => {
-    setEditingId(id);
-    setEditName(name);
-    setEditValue(String(amount));
+  const handleEdit = (category: any) => {
+    setEditingCategory(category);
+    setEditModalVisible(true);
   };
 
-  const handleSaveEdit = async (id: number, description: string) => {
-    const parsed = parseFloat(editValue.replace(/[^0-9.]/g, ''));
-    if (!isNaN(parsed) && editName.trim()) {
-      await editCategory(id, editName.trim(), description, parsed);
-    }
-    setEditingId(null);
-    setEditValue('');
-    setEditName('');
+  const handleSaveEdit = async (
+    id: number,
+    name: string,
+    description: string,
+    icon: string,
+    color: { light: string; dark: string; bg: string },
+    plannedAmount: number
+  ) => {
+    await editCategory(id, name, description, icon, color, plannedAmount);
+    setEditingCategory(null);
   };
 
   const handleDelete = (id: number, name: string) => {
+    const monthlyBudget = expenses.find((e) => e.category_id === id);
+    if (monthlyBudget && monthlyBudget.spent_amount > 0) {
+      Alert.alert(
+        'Cannot Delete Category',
+        `"${name}" cannot be deleted because you have already spent $${monthlyBudget.spent_amount.toFixed(2)} on it this month.`
+      );
+      return;
+    }
+
     Alert.alert(
       'Delete Category',
       `Are you sure you want to remove "${name}"?`,
@@ -125,7 +133,6 @@ const ManagePlannedExpensesScreen: React.FC = () => {
           ) : (
             categories.map((item, index) => {
               const color = JSON.parse(item.color);
-              const isEditing = editingId === item.id;
               const monthlyBudget = expenses.find((e) => e.category_id === item.id);
 
               return (
@@ -135,8 +142,7 @@ const ManagePlannedExpensesScreen: React.FC = () => {
                 >
                   <TouchableOpacity
                     style={styles.listItemLeft}
-                    activeOpacity={isEditing ? 1 : 0.7}
-                    disabled={isEditing}
+                    activeOpacity={0.7}
                     onPress={() => {
                       if (monthlyBudget) {
                         setSelectedExpense(monthlyBudget);
@@ -148,58 +154,33 @@ const ManagePlannedExpensesScreen: React.FC = () => {
                       <MaterialIcons name={item.icon as any} size={24} color={color.dark} />
                     </View>
                     <View style={{ flex: 1 }}>
-                      {isEditing ? (
-                        <>
-                          <TextInput
-                            style={styles.editNameInput}
-                            value={editName}
-                            onChangeText={setEditName}
-                            placeholder="Name"
-                            placeholderTextColor="#6b7280"
-                            autoFocus
-                          />
-                          <TextInput
-                            style={styles.editAmountInput}
-                            value={editValue}
-                            onChangeText={setEditValue}
-                            keyboardType="numeric"
-                            placeholder="Amount"
-                            placeholderTextColor="#6b7280"
-                            onBlur={() => handleSaveEdit(item.id, item.description)}
-                            onSubmitEditing={() => handleSaveEdit(item.id, item.description)}
-                          />
-                        </>
-                      ) : (
-                        <>
-                          <Text style={styles.categoryName}>{item.name}</Text>
-                          <View style={styles.amountRow}>
-                            <Text style={styles.categoryAmount}>
-                              Planned: ${item.planned_amount.toFixed(2)}
-                            </Text>
-                            {monthlyBudget && (
-                              <Text
-                                style={[
-                                  styles.spentText,
-                                  {
-                                    color:
-                                      monthlyBudget.spent_amount > monthlyBudget.planned_amount
-                                        ? '#f87171'
-                                        : '#9ca3af',
-                                  },
-                                ]}
-                              >
-                                {" • "}Spent: ${monthlyBudget.spent_amount.toFixed(2)}
-                              </Text>
-                            )}
-                          </View>
-                        </>
-                      )}
+                      <Text style={styles.categoryName}>{item.name}</Text>
+                      <View style={styles.amountRow}>
+                        <Text style={styles.categoryAmount}>
+                          Planned: ${item.planned_amount.toFixed(2)}
+                        </Text>
+                        {monthlyBudget && (
+                          <Text
+                            style={[
+                              styles.spentText,
+                              {
+                                color:
+                                  monthlyBudget.spent_amount > monthlyBudget.planned_amount
+                                    ? '#f87171'
+                                    : '#9ca3af',
+                              },
+                            ]}
+                          >
+                            {" • "}Spent: ${monthlyBudget.spent_amount.toFixed(2)}
+                          </Text>
+                        )}
+                      </View>
                     </View>
                   </TouchableOpacity>
                   <View style={styles.listItemActions}>
                     <TouchableOpacity
                       style={styles.actionBtn}
-                      onPress={() => handleEdit(item.id, item.name, item.planned_amount)}
+                      onPress={() => handleEdit(item)}
                     >
                       <MaterialIcons name="edit" size={20} color="#9ca3af" />
                     </TouchableOpacity>
@@ -225,10 +206,23 @@ const ManagePlannedExpensesScreen: React.FC = () => {
         </View>
       </ScrollView>
 
+      {/* Add Modal */}
       <AddCategoryModal
         visible={addModalVisible}
         onClose={() => setAddModalVisible(false)}
         onSave={handleSaveCategory}
+      />
+
+      {/* Edit Modal */}
+      <AddCategoryModal
+        visible={editModalVisible}
+        categoryToEdit={editingCategory}
+        onClose={() => {
+          setEditModalVisible(false);
+          setEditingCategory(null);
+        }}
+        onSave={handleSaveCategory} // Fallback, not used
+        onEdit={handleSaveEdit}
       />
 
       <TransactionManagerModal

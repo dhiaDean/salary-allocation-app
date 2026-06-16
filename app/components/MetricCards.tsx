@@ -18,6 +18,7 @@ const MetricCards: React.FC = () => {
       <ScrollView
       horizontal
       showsHorizontalScrollIndicator={false}
+      style={styles.scrollView}
       contentContainerStyle={styles.scrollViewContainer}
     >
       {/* Vault Balance Card */}
@@ -103,6 +104,7 @@ const MetricCards: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
+  scrollView: { height: 160, flexGrow: 0 },
   scrollViewContainer: { gap: 16, paddingHorizontal: 16 },
   card: { backgroundColor: '#1b2e21', borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)', borderRadius: 16, padding: 20, height: 160, justifyContent: 'space-between' },
   cardHeader: { flexDirection: 'row', alignItems: 'center', gap: 8 },

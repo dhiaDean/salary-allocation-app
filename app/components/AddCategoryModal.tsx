@@ -12,10 +12,20 @@ import {
   TouchableWithoutFeedback,
   View,
 } from 'react-native';
+import type { ExpenseCategory } from '../../db/types';
 
 interface AddCategoryModalProps {
   visible: boolean;
+  categoryToEdit?: ExpenseCategory | null;
   onSave: (
+    name: string,
+    description: string,
+    icon: string,
+    color: { light: string; dark: string; bg: string },
+    plannedAmount: number
+  ) => Promise<void>;
+  onEdit?: (
+    id: number,
     name: string,
     description: string,
     icon: string,
@@ -61,7 +71,9 @@ const ICON_PRESETS = [
 
 export const AddCategoryModal: React.FC<AddCategoryModalProps> = ({
   visible,
+  categoryToEdit = null,
   onSave,
+  onEdit,
   onClose,
 }) => {
   const [name, setName] = useState('');
@@ -70,31 +82,67 @@ export const AddCategoryModal: React.FC<AddCategoryModalProps> = ({
   const [selectedIcon, setSelectedIcon] = useState(ICON_PRESETS[0]);
   const [selectedColor, setSelectedColor] = useState(COLOR_PRESETS[0]);
 
-  // Reset state when modal opens
+  // Reset or load state when modal opens
   useEffect(() => {
     if (visible) {
-      setName('');
-      setDescription('');
-      setAmountInput('');
-      setSelectedIcon(ICON_PRESETS[0]);
-      setSelectedColor(COLOR_PRESETS[0]);
+      if (categoryToEdit) {
+        setName(categoryToEdit.name);
+        setDescription(categoryToEdit.description);
+        setAmountInput(String(categoryToEdit.planned_amount));
+        setSelectedIcon(categoryToEdit.icon);
+        
+        let parsedColor = COLOR_PRESETS[0];
+        try {
+          const catColor = JSON.parse(categoryToEdit.color);
+          const matchedPreset = COLOR_PRESETS.find(
+            (p) => p.light === catColor.light || p.dark === catColor.dark
+          );
+          if (matchedPreset) parsedColor = matchedPreset;
+          else parsedColor = { ...catColor, name: 'Custom' };
+        } catch (e) {
+          console.error(e);
+        }
+        setSelectedColor(parsedColor);
+      } else {
+        setName('');
+        setDescription('');
+        setAmountInput('');
+        setSelectedIcon(ICON_PRESETS[0]);
+        setSelectedColor(COLOR_PRESETS[0]);
+      }
     }
-  }, [visible]);
+  }, [visible, categoryToEdit]);
 
   const handleSave = async () => {
     if (!name.trim()) return;
     const amount = parseFloat(amountInput.replace(/[^0-9.]/g, '')) || 0;
-    await onSave(
-      name.trim(),
-      description.trim(),
-      selectedIcon,
-      {
-        light: selectedColor.light,
-        dark: selectedColor.dark,
-        bg: selectedColor.bg,
-      },
-      amount
-    );
+
+    if (categoryToEdit && onEdit) {
+      await onEdit(
+        categoryToEdit.id,
+        name.trim(),
+        description.trim(),
+        selectedIcon,
+        {
+          light: selectedColor.light,
+          dark: selectedColor.dark,
+          bg: selectedColor.bg,
+        },
+        amount
+      );
+    } else {
+      await onSave(
+        name.trim(),
+        description.trim(),
+        selectedIcon,
+        {
+          light: selectedColor.light,
+          dark: selectedColor.dark,
+          bg: selectedColor.bg,
+        },
+        amount
+      );
+    }
     onClose();
   };
 
@@ -114,7 +162,7 @@ export const AddCategoryModal: React.FC<AddCategoryModalProps> = ({
             showsVerticalScrollIndicator={false}
             contentContainerStyle={styles.scrollContainer}
           >
-            <Text style={styles.modalTitle}>New Category</Text>
+            <Text style={styles.modalTitle}>{categoryToEdit ? 'Edit Category' : 'New Category'}</Text>
             
             {/* Live Preview Card */}
             <View style={styles.previewContainer}>
@@ -232,8 +280,8 @@ export const AddCategoryModal: React.FC<AddCategoryModalProps> = ({
                 disabled={!name.trim()}
                 activeOpacity={0.85}
               >
-                <Text style={styles.confirmButtonText}>Create Category</Text>
-                <MaterialIcons name="add" size={20} color="#112116" />
+                <Text style={styles.confirmButtonText}>{categoryToEdit ? 'Save Changes' : 'Create Category'}</Text>
+                <MaterialIcons name={categoryToEdit ? 'done' : 'add'} size={20} color="#112116" />
               </TouchableOpacity>
               <TouchableOpacity style={styles.cancelButton} onPress={onClose} activeOpacity={0.7}>
                 <Text style={styles.cancelButtonText}>Cancel</Text>

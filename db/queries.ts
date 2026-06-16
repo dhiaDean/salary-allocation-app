@@ -134,12 +134,14 @@ export async function updateCategory(
   id: number,
   name: string,
   description: string,
+  icon: string,
+  color: string,
   plannedAmount: number
 ): Promise<void> {
   const db = await getDb();
   await db.runAsync(
-    'UPDATE expense_categories SET name = ?, description = ?, planned_amount = ? WHERE id = ?',
-    [name, description, plannedAmount, id]
+    'UPDATE expense_categories SET name = ?, description = ?, icon = ?, color = ?, planned_amount = ? WHERE id = ?',
+    [name, description, icon, color, plannedAmount, id]
   );
   // Also update open monthly budgets
   await db.runAsync(

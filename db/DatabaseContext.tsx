@@ -56,7 +56,14 @@ interface DatabaseContextValue {
   categories: ExpenseCategory[];
   refreshCategories: () => Promise<void>;
   removeCategory: (id: number) => Promise<void>;
-  editCategory: (id: number, name: string, description: string, amount: number) => Promise<void>;
+  editCategory: (
+    id: number,
+    name: string,
+    description: string,
+    icon: string,
+    color: object,
+    amount: number
+  ) => Promise<void>;
 
   // Vault
   vaultEntries: (VaultTransaction & { year: number; month: number })[];
@@ -225,14 +232,19 @@ export const DatabaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const removeCategory = useCallback(async (id: number) => {
     await deleteCategory(id);
     await refreshCategories();
-  }, []);
+  }, [refreshCategories]);
 
   const editCategory = useCallback(async (
-    id: number, name: string, description: string, amount: number
+    id: number,
+    name: string,
+    description: string,
+    icon: string,
+    color: object,
+    amount: number
   ) => {
-    await updateCategory(id, name, description, amount);
+    await updateCategory(id, name, description, icon, JSON.stringify(color), amount);
     await refreshCategories();
-  }, []);
+  }, [refreshCategories]);
 
   // ── Vault ─────────────────────────────────
   const refreshVault = useCallback(async () => {
